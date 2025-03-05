@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PolarSearch - Blake Dekel</title>
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* Animated Gradient Background */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(-45deg, #d0e7f9, #a1c4fd, #ffffff, #d0e7f9);
+      background-size: 400% 400%;
+      animation: gradientAnimation 15s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #333;
+      padding: 20px;
+    }
+    /* Header / Logo Section */
+    .header {
+      text-align: center;
+      margin-top: 30px;
+      margin-bottom: 20px;
+      animation: floatBear 3s ease-in-out infinite;
+    }
+    .header img {
+      width: 80px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+    .header h1 {
+      font-size: 3rem;
+      color: #2E86C1;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+      margin-bottom: 10px;
+      transition: transform 0.3s, color 0.3s;
+    }
+    .header h1:hover {
+      transform: scale(1.05);
+      color: #1B4F72;
+    }
+    .header .subtitle {
+      font-size: 1.2rem;
+      color: #555;
+    }
+    /* Search Bar */
+    .search-container {
+      width: 80%;
+      max-width: 600px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      border: 2px solid #bbb;
+      border-radius: 50px;
+      overflow: hidden;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .search-box:hover {
+      transform: scale(1.02);
+    }
+    .search-box input {
+      flex: 1;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      outline: none;
+    }
+    .search-box button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      background-color: #2E86C1;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+    .search-box button:hover {
+      background-color: #1B4F72;
+      transform: scale(1.05);
+    }
+    /* Results Section */
+    .results {
+      max-width: 800px;
+      width: 100%;
+      margin: 20px auto;
+      transition: transform 0.5s ease;
+    }
+    /* Subtle pulse when search is performed */
+    .results.search-active {
+      animation: searchPulse 0.5s ease;
+    }
+    @keyframes searchPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.01); }
+      100% { transform: scale(1); }
+    }
+    .result-item {
+      background: #fff;
+      margin: 15px 0;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateY(20px) rotateX(15deg);
+      animation: fadeInUp 1s forwards;
+      transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s;
+    }
+    /* Staggered Animation Delays */
+    .results .result-item:nth-child(1) { animation-delay: 0.2s; }
+    .results .result-item:nth-child(2) { animation-delay: 0.4s; }
+    .results .result-item:nth-child(3) { animation-delay: 0.6s; }
+    .results .result-item:nth-child(4) { animation-delay: 0.8s; }
+    .results .result-item:nth-child(5) { animation-delay: 1s; }
+    .results .result-item:nth-child(6) { animation-delay: 1.2s; }
+    .results .result-item:nth-child(7) { animation-delay: 1.4s; }
+    .results .result-item:nth-child(8) { animation-delay: 1.6s; }
+    .results .result-item:nth-child(9) { animation-delay: 1.8s; }
+    .results .result-item:nth-child(10) { animation-delay: 2s; }
+    .results .result-item:nth-child(11) { animation-delay: 2.2s; }
+    .results .result-item:nth-child(12) { animation-delay: 2.4s; }
+    .results .result-item:nth-child(13) { animation-delay: 2.6s; }
+    .result-item:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .result-item .citation {
+      font-size: 0.85rem;
+      color: #777;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    .result-item h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: #2E86C1;
+    }
+    .result-item p {
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .result-item a {
+      color: #1B4F72;
+      text-decoration: none;
+      font-size: 0.95rem;
+      position: relative;
+    }
+    .result-item a::after {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 2px;
+      background: #1B4F72;
+      transition: width 0.3s;
+      bottom: -2px;
+      left: 0;
+    }
+    .result-item a:hover::after {
+      width: 100%;
+    }
+    /* Images Section */
+    .images-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .image-container {
+      text-align: center;
+    }
+    .image-container img {
+      width: 200px;
+      height: auto;
+      border-radius: 8px;
+      border: 2px solid #eee;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .image-container img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .image-caption {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 5px;
+    }
+    /* Footer */
+    .footer {
+      margin: 20px 0 30px 0;
+      text-align: center;
+      color: #777;
+      font-size: 0.9rem;
+      animation: fadeIn 2s ease-in-out;
+    }
+    /* Keyframes for Animations */
+    @keyframes floatBear {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px) rotateX(15deg); }
+      to { opacity: 1; transform: translateY(0) rotateX(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes gradientAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header / Logo Section -->
+  <div class="header">
+    <img src="assets/logo.png" alt="PolarSearch Logo">
+    <h1>PolarSearch</h1>
+    <p class="subtitle">Blake Dekel - Period 4</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-container">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search for all things Polar Bear...">
+      <button id="searchButton">Search</button>
+    </div>
+  </div>
+
+  <!-- Results Section (always visible) -->
+  <div class="results" id="resultsContainer">
+    <!-- RESULT 1: Overview (Common & Scientific Name) -->
+    <div class="result-item" data-keywords="common name, scientific name, species, polar bear, overview, citations">
+      <p class="citation">Sources: Polar Bears International; Britannica</p>
+      <h2>OVERVIEW: The Polar Bear (Ursus maritimus)</h2>
+      <p>
+        Polar bears are the largest land carnivores on Earth and the top predators in the Arctic.
+        They have evolved specialized traits like, thick fur, a substantial layer of blubber, and wide paws to
+        survive in extreme cold while hunting seals on the frozen seas.
+      </p>
+      <a href="https://www.britannica.com/animal/polar-bear" target="_blank">Learn More</a>
+    </div>
+
+    <!-- RESULT 2: Images (At least 4 images) -->
+    <div class="result-item" data-keywords="images, gallery, photos, 4 images, polar bear images, pictures, citations">
+      <p class="citation">Image Sources: Provided by Pixabay</p>
+      <h2>POLAR BEAR IMAGES</h2>
+      <p>Explore a gallery of striking polar bear images captured in their natural Arctic habitat.</p>
+      <div class="images-row">
+        <div class="image-container">
+          <img src="assets/image1.png" alt="Polar Bear on Ice">
+          <div class="image-caption">Provided by Pixabay</div>
+        </div>
+        <div class="image-container">
+          <img src="assets/image2.png" alt="Polar Bear Face">
+          <div class="image-caption">Provided by Pixabay</div>
+        </div>
+        <div class="image-container">
+          <img src="assets/image3.png" alt="Polar Bear Family">
+          <div class="image-caption">Provided by Pixabay</div>
+        </div>
+        <div class="image-container">
+          <img src="assets/image4.png" alt="Polar Bear with Cub">
+          <div class="image-caption">Provided by Pixabay</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT 3: Population & Conservation Status -->
+    <div class="result-item" data-keywords="population, conservation, status, endangered, vulnerable, numbers, polar bear, citations">
+      <p class="citation">Sources: IUCN; World Wildlife Fund</p>
+      <h2>POPULATION & CONSERVATION STATUS</h2>
+      <p>
+        There are an estimated 26,000 polar bears in the wild.
+        Even though some subpopulations have recovered from overhunting, overall numbers are declining due to climate change and loss of sea ice.
+        They are classified as Vulnerable, and they are listed as Threatened under the U.S. Endangered Species Act.
+      </p>
+      <a href="https://www.iucnredlist.org/species/22842/14871419" target="_blank">IUCN Polar Bear Report</a>
+    </div>
+
+    <!-- RESULT 4: Native Environment & Description -->
+    <div class="result-item" data-keywords="habitat, native environment, description, species, polar bear habitat, environment, citations">
+      <p class="citation">Sources: National Geographic; Arctic Studies</p>
+      <h2>NATURAL HABITAT & ENVIRONMENT</h2>
+      <p>
+        Polar bears inhabit the circumpolar Arctic, relying on sea ice as a platform for hunting their primary prey, seals.
+        They can also be found in Alaska, Canada, Russia, Greenland, and Norway, where extreme cold and dramatic seasonal changes prevail.
+      </p>
+      <a href="https://www.nationalgeographic.com/animals/mammals/facts/polar-bear" target="_blank">National Geographic: Polar Bear</a>
+    </div>
+
+    <!-- RESULT 5: Abiotic Factors Affecting Evolution -->
+    <div class="result-item" data-keywords="abiotic, factors, evolution, cold, sea ice, environmental, polar bear, citations">
+      <p class="citation">Sources: Scientific Journals (PNAS); Research Studies</p>
+      <h2>ABIOTIC FACTORS DRIVING EVOLUTION</h2>
+      <p>
+        The Arctic’s extreme cold and reliance on sea ice are key abiotic factors.
+        Polar bears with thicker fur, more blubber, and traits for efficient swimming have a survival advantage,
+        leading to genetic shifts favoring cold tolerance.
+      </p>
+      <a href="https://www.pnas.org/" target="_blank">Read Research on Abiotic Impacts</a>
+    </div>
+
+    <!-- RESULT 6: Biotic Factors Affecting Evolution -->
+    <div class="result-item" data-keywords="biotic, factors, seals, camouflage, hunting, evolution, polar bear, citations">
+      <p class="citation">Sources: Scientific Journals (PNAS); Research Studies</p>
+      <h2>BIOTIC FACTORS DRIVING EVOLUTION</h2>
+      <p>
+        The abundance of high calorie seals promotes biotic selection.
+        Polar bears that evolved stealth, camouflage, and powerful hunting abilities succeeded, shifting allele frequencies in favor of these traits.
+      </p>
+      <a href="https://www.pnas.org/" target="_blank">Read Research on Biotic Interactions</a>
+    </div>
+
+    <!-- RESULT 7: Natural History & Genetic Changes -->
+    <div class="result-item" data-keywords="natural history, population, genetic, gene pool, evolution, history, polar bear, citations">
+      <p class="citation">Sources: Evolutionary Biology Research; Nature</p>
+      <h2>NATURAL HISTORY & GENE POOL CHANGES</h2>
+      <p>
+        Diverging from brown bear ancestors around 500,000 years ago, polar bears have experienced population changes due to climate cycles and human impacts.
+        Their gene pool now favors traits like specialized fat metabolism and insulating fur, important for Arctic survival.
+      </p>
+      <a href="https://www.nature.com/" target="_blank">Nature: Polar Bear Evolution</a>
+    </div>
+
+    <!-- RESULT 8: Ecological Relationships -->
+    <div class="result-item" data-keywords="ecological, relationships, predator, prey, interspecies, seals, brown bear, hybrid, polar bear, citations">
+      <p class="citation">Sources: WWF; Research Studies</p>
+      <h2>ECOLOGICAL RELATIONSHIPS</h2>
+      <p>
+        <strong>Predator–Prey with Seals:</strong> Polar bears primarily hunt ringed seals, pushing adaptations in both species.
+        <br><br>
+        <strong>Overlap with Brown/Grizzly Bears:</strong> As sea ice declines, polar bears increasingly encounter brown bears, occasionally leading to hybrid “pizzly” bears.
+      </p>
+      <a href="https://www.worldwildlife.org/species/polar-bear" target="_blank">World Wildlife Fund: Polar Bears</a>
+    </div>
+
+    <!-- RESULT 9: Reproductive Details -->
+    <div class="result-item" data-keywords="reproductive, details, gestation, sexual maturity, litter, reproduction, polar bear, citations">
+      <p class="citation">Sources: Wildlife Reports; IUCN</p>
+      <h2>REPRODUCTIVE DETAILS & EVOLUTIONARY IMPACT</h2>
+      <p>
+        With a gestation period of 7–8 months including delayed implantation and a typical litter of 1–3 cubs,
+        polar bears reach sexual maturity at about 4 years old in females and 6–10 years old in males. Extended maternal care, lasting over 2 years,
+        means that adaptive traits spread slowly across generations.
+      </p>
+      <a href="https://www.iucnredlist.org/" target="_blank">IUCN: Reproductive Data</a>
+    </div>
+
+    <!-- RESULT 10: Beneficial Phenotypic Traits -->
+    <div class="result-item" data-keywords="phenotypic traits, adaptations, fur, paws, claws, beneficial, polar bear, citations">
+      <p class="citation">Sources: Academic Journals; Polar Bear Studies</p>
+      <h2>KEY ADAPTATIONS: BENEFICIAL PHENOTYPES</h2>
+      <p>
+        <strong>1) Thick Fur & Blubber:</strong> Hollow, translucent hairs and dense underfur provide insulation, while a thick blubber layer offers both protection and energy reserves.
+        <br><br>
+        <strong>2) Specialized Paws:</strong> Wide, padded paws distribute weight on ice and aid in swimming.
+        <br><br>
+        <strong>3) Strong Claws & Sharp Teeth:</strong> Curved claws and shreading(carnassial) teeth enable efficient seal capture and processing.
+      </p>
+      <a href="https://www.sciencedirect.com/" target="_blank">Scientific Research on Polar Bear Adaptations</a>
+    </div>
+
+    <!-- RESULT 11: Historical Phenotypic Change -->
+    <div class="result-item" data-keywords="historical, phenotype, environmental shifts, change, evolution, polar bear, citations">
+      <p class="citation">Sources: Evolutionary Research; Scientific Studies</p>
+      <h2>HISTORICAL PHENOTYPIC CHANGE</h2>
+      <p>
+        Polar bears evolved from darker furred brown bear ancestors.
+        Natural selection favored lighter, nearly white fur for improved camouflage against snow and ice,
+        and dental adaptations shifted from omnivorous molars to sharper, meat shearing structures.
+      </p>
+      <a href="https://www.nature.com/" target="_blank">Nature: Evolutionary Changes</a>
+    </div>
+
+    <!-- RESULT 12: Climate Change Prediction -->
+    <div class="result-item" data-keywords="climate change, adaptation, future, prediction, outlook, polar bear, citations">
+      <p class="citation">Sources: Nature; Climate Change Studies</p>
+      <h2>FUTURE OUTLOOK UNDER CLIMATE CHANGE</h2>
+      <p>
+        With the rapid decline of Arctic sea ice, polar bears face an existential threat.
+        Their specialized adaptations make them vulnerable to small environmental shifts.
+        If climate change continues, polar bears may need to migrate north, adapt further, or face local extinctions.
+      </p>
+      <a href="https://www.nationalgeographic.com/environment/article/climate-change-polar-bears" target="_blank">National Geographic: Climate Change</a>
+    </div>
+
+    <!-- RESULT 13: Fun Fact -->
+    <div class="result-item" data-keywords="fun fact, trivia, interesting, translucent fur, polar bear, citations">
+      <p class="citation">Sources: National Geographic</p>
+      <h2>FUN FACT: TRANSLUCENT FUR</h2>
+      <p>
+        Despite appearing white, each polar bear hair is transparent. The hair’s structure reflects light,
+        while their black skin helps absorb heat from sunlight.
+      </p>
+      <a href="https://www.nationalgeographic.com/animals/mammals/facts/polar-bear" target="_blank">Learn More</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    &copy; 2025 PolarSearch. Created by Blake Dekel, Period 4.
+  </div>
+
+  <!-- JavaScript for Search Functionality with Debounce and Fuzzy Matching -->
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const searchButton = document.getElementById("searchButton");
+    const results = document.querySelectorAll(".result-item");
+    const resultsContainer = document.getElementById("resultsContainer");
+
+    // Simple Levenshtein distance implementation
+    function levenshtein(a, b) {
+      const matrix = [];
+      for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+      }
+      for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+      }
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1, // substitution
+              matrix[i][j - 1] + 1,     // insertion
+              matrix[i - 1][j] + 1      // deletion
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+
+    // Fuzzy matching: check if any keyword is within a threshold distance of the filter
+    function fuzzyMatch(filter, keywords) {
+      const kwArr = keywords.split(",");
+      for (let i = 0; i < kwArr.length; i++) {
+        const kw = kwArr[i].trim().toLowerCase();
+        // Use a threshold of at least 1, or 30% of keyword length, whichever is greater
+        const threshold = Math.max(1, Math.floor(kw.length * 0.3));
+        if (levenshtein(filter, kw) <= threshold) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    let debounceTimeout;
+    function filterResults() {
+      const filter = searchInput.value.toLowerCase();
+      
+      results.forEach(result => {
+        const keywords = result.dataset.keywords.toLowerCase();
+        const text = result.textContent.toLowerCase();
+        // Check if the result text or keywords include the search query
+        // OR if a fuzzy match is found on the keywords.
+        if (text.includes(filter) || keywords.includes(filter) || fuzzyMatch(filter, keywords)) {
+          result.style.display = 'block';
+          // Use CSS transitions for opacity and transform
+          result.style.opacity = 1;
+          result.style.transform = "translateY(0) rotateX(0)";
+        } else {
+          result.style.opacity = 0;
+          result.style.transform = "translateY(20px) rotateX(15deg)";
+          setTimeout(() => {
+            result.style.display = 'none';
+          }, 500);
+        }
+      });
+      
+      // Add a subtle pulse animation to the results container on search
+      resultsContainer.classList.add("search-active");
+      setTimeout(() => {
+        resultsContainer.classList.remove("search-active");
+      }, 500);
+    }
+    
+    function debounceFilter() {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(filterResults, 300);
+    }
+    
+    searchInput.addEventListener("keyup", debounceFilter);
+    searchButton.addEventListener("click", filterResults);
+  </script>
+</body>
+</html>
